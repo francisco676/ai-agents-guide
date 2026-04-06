@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3 AI Agents That Replace Intern Roles | RallyUp</title>
+  <style>
+    :root {
+      --bg: #09090b;
+      --surface: #18181b;
+      --border: #3f3f46;
+      --text: #fafafa;
+      --text2: #a1a1aa;
+      --accent: #5B6FFF;
+      --lime: #D8EC6A;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.65;
+    }
+
+    /* ── GATE ─────────────────────────────────────────────────────── */
+    #gate {
+      position: fixed;
+      inset: 0;
+      background: rgba(9,9,11,0.92);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 24px;
+      transition: opacity 0.5s ease;
+    }
+    #gate.unlocking { opacity: 0; pointer-events: none; }
+
+    .gate-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 36px;
+      max-width: 480px;
+      width: 100%;
+    }
+
+    .gate-badge {
+      display: inline-block;
+      background: rgba(91,111,255,0.15);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 100px;
+      border: 1px solid rgba(91,111,255,0.3);
+      margin-bottom: 20px;
+    }
+
+    .gate-headline {
+      font-size: clamp(22px, 4vw, 28px);
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 12px;
+    }
+
+    .gate-sub {
+      color: var(--text2);
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    .gate-bullets {
+      list-style: none;
+      margin-bottom: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .gate-bullets li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text);
+    }
+    .gate-bullets li::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--lime);
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 7px;
+    }
+
+    .gate-input-wrap { display: flex; flex-direction: column; gap: 10px; }
+
+    #gate-email {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 15px;
+      padding: 13px 16px;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    #gate-email:focus { border-color: var(--accent); }
+    #gate-email::placeholder { color: var(--text2); }
+
+    #gate-btn {
+      background: var(--lime);
+      color: #09090b;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 13px 24px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      width: 100%;
+    }
+    #gate-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    #gate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .gate-error { color: #f87171; font-size: 12px; display: none; margin-top: 4px; }
+
+    .gate-fine {
+      color: var(--text2);
+      font-size: 11px;
+      margin-top: 14px;
+      text-align: center;
+    }
+
+    /* ── CONTENT ──────────────────────────────────────────────────── */
+    #content { display: none; }
+
+    .page-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 24px 120px;
+    }
+
+    /* Logo bar */
+    .logo-bar {
+      padding: 24px 0 32px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 48px;
+    }
+    .logo-text {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    /* Hero */
+    .content-badge {
+      display: inline-block;
+      background: rgba(216,236,106,0.12);
+      color: var(--lime);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 100px;
+      border: 1px solid rgba(216,236,106,0.25);
+      margin-bottom: 20px;
+    }
+
+    .content-headline {
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+
+    .content-sub {
+      font-size: 17px;
+      color: var(--text2);
+      max-width: 580px;
+      margin-bottom: 40px;
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 48px;
+    }
+    .stat-cell {
+      background: var(--surface);
+      padding: 20px 24px;
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--lime);
+      display: block;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: var(--text2);
+      margin-top: 2px;
+    }
+
+    /* Callout block */
+    .callout {
+      border-left: 3px solid var(--lime);
+      background: rgba(216,236,106,0.05);
+      border-radius: 0 8px 8px 0;
+      padding: 20px 24px;
+      margin-bottom: 48px;
+    }
+    .callout p {
+      font-size: 17px;
+      font-style: italic;
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    /* Section headers */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      font-size: clamp(20px, 3vw, 26px);
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      margin-bottom: 12px;
+      line-height: 1.25;
+    }
+
+    h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    p { color: var(--text2); font-size: 15px; margin-bottom: 16px; }
+    p:last-child { margin-bottom: 0; }
+
+    /* Agent cards */
+    .agent-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .agent-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .agent-number {
+      background: var(--accent);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .agent-wins {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 16px 0 24px;
+    }
+    .agent-wins li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text);
+    }
+    .agent-wins li::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--lime);
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 7px;
+    }
+
+    /* Prompt blocks */
+    .prompt-block {
+      background: #0d0d10;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 22px;
+      font-family: 'Fira Code', 'Courier New', monospace;
+      font-size: 13px;
+      color: #d4d4d8;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.6;
+      overflow-x: auto;
+    }
+    .prompt-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text2);
+      margin-bottom: 8px;
+    }
+
+    /* n8n workflow */
+    .workflow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+    .workflow-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+    }
+    .workflow-step-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+    .workflow-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .workflow-card p { font-size: 12px; color: var(--text2); }
+
+    /* Divider */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 48px 0;
+    }
+
+    /* CTA section */
+    .cta-section {
+      background: linear-gradient(135deg, rgba(91,111,255,0.12) 0%, rgba(216,236,106,0.06) 100%);
+      border: 1px solid rgba(91,111,255,0.25);
+      border-radius: 16px;
+      padding: 48px 40px;
+      text-align: center;
+      margin-top: 64px;
+    }
+    .cta-section h2 {
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+    .cta-section p {
+      color: var(--text2);
+      max-width: 520px;
+      margin: 0 auto 28px;
+      font-size: 16px;
+    }
+    .cta-btn {
+      display: inline-block;
+      background: var(--lime);
+      color: #09090b;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 14px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .cta-btn:hover { opacity: 0.88; transform: translateY(-2px); }
+
+    /* Float CTA */
+    #float-cta {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 12px 20px;
+      border-radius: 100px;
+      text-decoration: none;
+      z-index: 100;
+      box-shadow: 0 4px 24px rgba(91,111,255,0.35);
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    #float-cta.visible { opacity: 1; transform: translateY(0); }
+    #float-cta:hover { opacity: 0.88; }
+
+    /* Footer */
+    .footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text2);
+      font-size: 12px;
+    }
+    .footer a { color: var(--text2); text-decoration: underline; }
+
+    @media (max-width: 540px) {
+      .gate-card { padding: 28px 20px; }
+      .agent-section { padding: 24px 20px; }
+      .cta-section { padding: 32px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- GATE -->
+<div id="gate">
+  <div class="gate-card">
+    <div class="gate-badge">Free Guide</div>
+    <h2 class="gate-headline">Replace 3 Intern Roles with <span style="color:var(--lime)">AI Agents</span> for $20/month</h2>
+    <p class="gate-sub">The exact Claude agent configs, n8n workflows, and integration setup I used to get 13+ hours a week back.</p>
+    <ul class="gate-bullets">
+      <li>Claude agent system prompts for all 3 roles (copy and customize)</li>
+      <li>n8n workflows that trigger each agent on your schedule</li>
+      <li>CRM, Slack, and calendar integration setup</li>
+      <li>Voice templates so every output sounds like your team</li>
+      <li>Full breakdown of the $20/month stack</li>
+    </ul>
+    <div class="gate-input-wrap">
+      <input type="email" id="gate-email" placeholder="your@email.com" />
+      <span class="gate-error" id="gate-error">Please enter a valid email address.</span>
+      <button id="gate-btn">Get the Free Guide</button>
+    </div>
+    <p class="gate-fine">No spam. Unsubscribe anytime. By entering your email you are joining RallyUp's newsletter.</p>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+  <div class="page-wrap">
+
+    <div class="logo-bar">
+      <span class="logo-text">Rally<span style="color:var(--lime)">Up</span></span>
+    </div>
+
+    <div class="content-badge">AI Agents Playbook</div>
+    <h1 class="content-headline">3 AI Agents That Replace Roles I Used to <span style="color:var(--lime)">Hire Interns For</span></h1>
+    <p class="content-sub">Total cost: $20/month. Total time to build: 1 week. Here is everything you need to replicate the exact setup.</p>
+
+    <div class="stats-bar">
+      <div class="stat-cell">
+        <span class="stat-number">$20</span>
+        <span class="stat-label">per month total cost</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-number">3</span>
+        <span class="stat-label">roles replaced</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-number">13+</span>
+        <span class="stat-label">hours/week recovered</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-number">1 wk</span>
+        <span class="stat-label">to build everything</span>
+      </div>
+    </div>
+
+    <div class="callout">
+      <p>Most jobs are 80% data collection and 20% judgment. AI handles the 80% while humans do the 20% that matters. That is the frame for everything below.</p>
+    </div>
+
+    <!-- AGENT 1 -->
+    <div class="section-label">Agent 01</div>
+    <div class="agent-section">
+      <div class="agent-header">
+        <div class="agent-number">1</div>
+        <h3>The Trends Researcher</h3>
+      </div>
+      <p>Before this agent, I spent 3+ hours every week manually scanning LinkedIn, newsletters, and competitor feeds looking for content ideas worth pursuing. Now a Claude agent does it automatically, scores each trend against our ICP context, and posts a ranked list to Slack every Monday morning.</p>
+      <ul class="agent-wins">
+        <li>3 hours per week back</li>
+        <li>Pulls from 40+ sources automatically</li>
+        <li>Scores each trend against your context graph</li>
+        <li>Drops a ranked Slack digest every Monday at 9am</li>
+      </ul>
+      <div class="prompt-label">Claude System Prompt (copy and customize)</div>
+      <div class="prompt-block">You are a B2B content trends researcher for [COMPANY].
+
+Your ICP: [describe your ideal customer profile in 2-3 sentences]
+Your content pillars: [list 3-5 topics you write about]
+
+Every week you will receive a batch of raw content signals pulled from newsletters, LinkedIn posts, and industry feeds. Your job is to:
+
+1. Identify the 8-10 most relevant trends for our ICP
+2. Score each trend from 1-10 on three dimensions:
+   - ICP relevance (does our buyer care about this?)
+   - Timeliness (is this peaking now or fading?)
+   - Angle potential (can we say something non-obvious?)
+3. Return a ranked list in this format:
+
+TREND: [topic name]
+SCORE: [X/30]
+WHY NOW: [1 sentence on timing]
+OUR ANGLE: [1 sentence on the non-obvious take]
+FORMAT SUGGESTION: [thread / carousel / short post / long post]
+
+Output only the ranked list. No preamble.</div>
+
+      <br>
+      <div class="prompt-label">n8n Trigger Setup</div>
+      <div class="prompt-block">Trigger: Schedule (every Monday 08:30)
+Step 1: HTTP Request nodes pulling RSS feeds from your 40+ sources
+Step 2: Aggregate all items from the past 7 days into one payload
+Step 3: Claude API node with the system prompt above
+Step 4: Slack node posting formatted digest to #content-ideas</div>
+    </div>
+
+    <!-- AGENT 2 -->
+    <div class="section-label">Agent 02</div>
+    <div class="agent-section">
+      <div class="agent-header">
+        <div class="agent-number">2</div>
+        <h3>The Executive Assistant</h3>
+      </div>
+      <p>Meeting prep, follow-up emails, action item tracking, scheduling coordination. This is the invisible work that makes a founder productive but used to eat 10+ hours of my week. Now a Claude agent reads my calendar, pulls context from Attio and Slack, writes briefs before every call, and drafts follow-ups after.</p>
+      <ul class="agent-wins">
+        <li>10+ hours per week back</li>
+        <li>Meeting brief generated 30 minutes before every call</li>
+        <li>Follow-up email drafted within 5 minutes of hanging up</li>
+        <li>Zero missed action items since March</li>
+      </ul>
+      <div class="prompt-label">Pre-Call Brief Prompt (copy and customize)</div>
+      <div class="prompt-block">You are an executive assistant preparing a pre-call brief for [YOUR NAME].
+
+You will receive:
+- Meeting title and attendee names
+- CRM notes pulled from Attio for each attendee
+- Recent Slack messages mentioning the company or contact
+- Last email thread with this person (if any)
+
+Generate a brief in this format:
+
+WHO THEY ARE
+[2-3 sentence summary of the company and the contact's role]
+
+WHERE WE LEFT OFF
+[What was discussed or agreed in the last interaction]
+
+CONTEXT SIGNALS
+[2-3 relevant signals from Slack/email/CRM that are worth knowing]
+
+SUGGESTED AGENDA
+[3 bullet points for how to structure the 30 minutes]
+
+WATCH OUT FOR
+[1-2 potential friction points or sensitivities based on history]
+
+Keep the brief under 250 words. Write in plain English, no jargon.</div>
+
+      <br>
+      <div class="prompt-label">Post-Call Follow-Up Prompt</div>
+      <div class="prompt-block">You are drafting a follow-up email after a sales or CS call.
+
+You will receive a call transcript or summary. Extract:
+1. The 3 most important things discussed
+2. Any commitments made (by either party)
+3. The agreed next step and timeline
+
+Then draft a follow-up email in this format:
+- Subject: Re: [call topic] + next steps
+- Opening: 1 sentence acknowledging the conversation
+- Body: what we discussed (3 bullets max), what we each committed to
+- Close: confirm the next step with a specific date or deadline
+
+Write in a warm but professional tone.
+Do not use filler phrases like "As discussed" or "Per our conversation."
+No em dashes anywhere in the output.</div>
+
+      <br>
+      <div class="prompt-label">n8n Trigger Setup</div>
+      <div class="prompt-block">PRE-CALL WORKFLOW
+Trigger: Google Calendar event starts in 30 minutes
+Step 1: Fetch attendee emails from the event
+Step 2: Attio lookup by company domain for each attendee
+Step 3: Slack search for messages mentioning the company (last 14 days)
+Step 4: Claude API call with pre-call brief prompt
+Step 5: Slack DM to yourself with the brief
+
+POST-CALL WORKFLOW
+Trigger: Calendar event ends (or webhook from your meeting recorder)
+Step 1: Pull transcript from Granola / Fireflies / Fathom
+Step 2: Claude API call with follow-up prompt
+Step 3: Gmail draft created, labeled "AI Draft - Review Before Sending"</div>
+    </div>
+
+    <!-- AGENT 3 -->
+    <div class="section-label">Agent 03</div>
+    <div class="agent-section">
+      <div class="agent-header">
+        <div class="agent-number">3</div>
+        <h3>The Business Development Rep</h3>
+      </div>
+      <p>Prospect research, personalized outreach drafts, pipeline updates. The agent reads our Attio CRM, identifies signals, and drafts outreach that references real context about the prospect's company and content. What used to take 45 minutes per prospect now takes 3 minutes.</p>
+      <ul class="agent-wins">
+        <li>45 minutes of research per prospect compressed to 3 minutes</li>
+        <li>Personalization that references their actual LinkedIn posts</li>
+        <li>Pipeline notes updated automatically after every touch</li>
+        <li>Outreach quality is higher than what most humans produce at speed</li>
+      </ul>
+      <div class="prompt-label">Prospect Research + Outreach Prompt (copy and customize)</div>
+      <div class="prompt-block">You are a BDR at [COMPANY] doing research on a new prospect before writing outreach.
+
+You will receive:
+- Company name, website, and LinkedIn URL
+- The prospect's job title and LinkedIn posts from the last 30 days
+- Any existing Attio CRM notes on this account
+
+Your ICP: [describe your target buyer in 2-3 sentences]
+Your value prop: [what problem you solve, in one sentence]
+
+Step 1 - Research summary:
+Write a 5-bullet summary of the company. Include: what they do, their GTM motion, likely team size for [relevant function], any recent announcements or hires, any signal that suggests they have the problem we solve.
+
+Step 2 - Outreach draft:
+Write a 4-line cold email.
+Line 1: Something specific about them (from their posts or news) that shows you did the work.
+Line 2: Connect it to the problem we solve.
+Line 3: Social proof (one relevant client or result).
+Line 4: Low-friction CTA (offer value, not a meeting).
+
+Do not use "I came across your profile." Do not use em dashes.
+Keep the whole email under 80 words.</div>
+
+      <br>
+      <div class="prompt-label">n8n Trigger Setup</div>
+      <div class="prompt-block">Trigger: Attio webhook when a new company is added to a specific list
+Step 1: Fetch company data from Attio (website, LinkedIn, notes)
+Step 2: Web scrape LinkedIn posts for the primary contact (Apify or PhantomBuster)
+Step 3: Claude API call with the research + outreach prompt
+Step 4: Write research summary back to Attio as a note
+Step 5: Post outreach draft to Slack #bdr-queue for human review before sending</div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- STACK + COST -->
+    <div class="section-label">The Stack</div>
+    <h2>Everything You Need to Replicate This</h2>
+    <p>The total stack costs approximately $20/month. Here is what you actually need and what you can skip at the start.</p>
+
+    <div class="workflow-grid">
+      <div class="workflow-card">
+        <div class="workflow-step-num">Orchestration</div>
+        <h4>n8n (self-hosted)</h4>
+        <p>Free on your own VPS. $20/month on Railway or Render. Handles all triggers and routing between tools.</p>
+      </div>
+      <div class="workflow-card">
+        <div class="workflow-step-num">AI Brain</div>
+        <h4>Claude API</h4>
+        <p>Anthropic API via n8n HTTP node. At the volume described here, costs roughly $5-10/month depending on usage.</p>
+      </div>
+      <div class="workflow-card">
+        <div class="workflow-step-num">CRM</div>
+        <h4>Attio</h4>
+        <p>Native webhooks and a clean API make it the best CRM for n8n integrations. Replaces HubSpot for most early-stage teams.</p>
+      </div>
+      <div class="workflow-card">
+        <div class="workflow-step-num">Comms</div>
+        <h4>Slack + Gmail</h4>
+        <p>Outputs route to Slack for team visibility and Gmail for draft reviews. Both have native n8n nodes.</p>
+      </div>
+      <div class="workflow-card">
+        <div class="workflow-step-num">Calendar</div>
+        <h4>Google Calendar</h4>
+        <p>Triggers the pre-call brief workflow. n8n polls for events starting in 30 minutes every 5 minutes.</p>
+      </div>
+      <div class="workflow-card">
+        <div class="workflow-step-num">Transcripts</div>
+        <h4>Granola / Fathom</h4>
+        <p>Either works for post-call transcript delivery. Granola has a direct MCP integration if you use Claude desktop.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <p>One important clarification: I am not anti-hiring. I hired all 3 of these roles before and I probably will again. But most jobs are 80% data collection and 20% judgment. AI handles the 80% while humans do the 20% that matters. Start here, then hire when you need more of the 20%.</p>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-section">
+      <h2>Your Executives Should Own LinkedIn.<br>RallyUp Runs It For You.</h2>
+      <p>RallyUp builds a deep context layer around your founder or exec, captures their real voice and expertise, and manages their LinkedIn presence end to end. Two minutes of approval per week. Authentic content that compounds over time and drives inbound.</p>
+      <a href="https://calendar.app.google/SDA5TMRMbqbPQWEn7" target="_blank" class="cta-btn">Book a Free Call with Alec &rarr;</a>
+    </div>
+
+    <div class="footer">
+      Built by <a href="https://rallyup.team" target="_blank">RallyUp</a>
+    </div>
+
+  </div>
+</div>
+
+<!-- FLOAT CTA -->
+<a href="https://calendar.app.google/SDA5TMRMbqbPQWEn7" target="_blank" id="float-cta">Book a call with Alec &rarr;</a>
+
+<script>
+  const LS_KEY  = 'rallyup_lm_ai_agents';
+  const gate    = document.getElementById('gate');
+  const content = document.getElementById('content');
+  const input   = document.getElementById('gate-email');
+  const btn     = document.getElementById('gate-btn');
+  const errEl   = document.getElementById('gate-error');
+
+  function unlock() {
+    gate.classList.add('unlocking');
+    setTimeout(() => { gate.style.display = 'none'; content.style.display = 'block'; }, 500);
+  }
+
+  if (localStorage.getItem(LS_KEY)) {
+    gate.style.display = 'none';
+    content.style.display = 'block';
+  }
+
+  btn.addEventListener('click', async function () {
+    const email = input.value.trim();
+    if (!email || !email.includes('@')) {
+      errEl.style.display = 'block';
+      return;
+    }
+    errEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Unlocking...';
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      if (res.ok) {
+        localStorage.setItem(LS_KEY, '1');
+        unlock();
+      } else {
+        throw new Error('Subscribe failed');
+      }
+    } catch (ex) {
+      btn.textContent = 'Something went wrong. Try again.';
+      btn.disabled = false;
+    }
+  });
+
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') btn.click();
+  });
+
+  const floatBtn = document.getElementById('float-cta');
+  window.addEventListener('scroll', () => {
+    const scrolled = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+    if (scrolled > 0.45) floatBtn.classList.add('visible');
+    else floatBtn.classList.remove('visible');
+  });
+</script>
+</body>
+</html>
